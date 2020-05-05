@@ -1,4 +1,7 @@
+from __future__ import print_function
+from imutils.video import WebcamVideoStream
 from imutils.video import VideoStream
+from imutils.video import FPS
 import paho.mqtt.client as paho
 from datetime import datetime
 from collections import deque
@@ -20,7 +23,7 @@ normal_radius_threshold = 40
 close_radius_threshold = 55
 
 def on_publish(client,userdata,result):
-  print("published data is : ")
+  print("Published data is : ")
   pass
 
 def ball_pub():
@@ -29,13 +32,19 @@ def ball_pub():
   client1.connect(broker,port,keepalive=60) #establishing connection
   ap = argparse.ArgumentParser()
   ap.add_argument("-b", "--buffer", type=int, default=64, help="max buffer size")
+  ap.add_argument("-n", "--num-frames", type=int, default=100,
+	help="# of frames to loop over for FPS test")
+  ap.add_argument("-d", "--display", type=int, default=-1,
+	help="Whether or not frames should be displayed")
   args = vars(ap.parse_args())
+  print("[INFO] sampling frames from webcam...")
   blueLower = (87, 78, 121)
   blueUpper = (255, 255, 255)
   # greenLower = (29, 86, 6)
   # greenUpper = (64, 255, 255)
   pts = deque(maxlen=args["buffer"])
   vs = VideoStream(src=0).start()
+  fps = FPS().start()
   time.sleep(2)
   radius1 = 0
   while True:
@@ -51,7 +60,10 @@ def ball_pub():
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
     center = None
-
+    if args["display"] > 0:
+      cv2.imshow("Frame", frame)
+      key = cv2.waitKey(1) & 0xFF
+    fps.update()
     if len(cnts) > 0:
       payload = ''
       c = max(cnts, key=cv2.contourArea)
@@ -68,9 +80,9 @@ def ball_pub():
         elif radius < normal_radius_threshold:
           cv2.putText(frame, "Far", (350, 300), cv2.FONT_HERSHEY_PLAIN,fontScale=1.5, color=(0, 100, 100), thickness=2)
       if(radius-radius1 > radius_threshold):
-          payload += '{go fw, ' + str(radius-radius1)+'}'
+          payload += '{"action": "forward", "value": "' + str(radius-radius1)+'"}'
       elif(radius-radius1 < -radius_threshold):
-          payload += '{go bw, ' + str(-(radius-radius1)) +'}'
+          payload += '{"action": "backward", "value": "' + str(-(radius-radius1)) +'"}'
       radius1=radius
     pts.appendleft(center)
 
@@ -88,9 +100,9 @@ def ball_pub():
       elif pts[i][0] == horizontal_limit/2 and pts[i][1] == vertical_limit/2:
           w = "Center!"
       if(pts[i][0]-pts[i-1][0] > horizontal_threshold):
-            payload +='{go left, ' + str(pts[i][0]-pts[i-1][0]) + '}'
+            payload += '{"action": "left", "value": "' + str(pts[i][0]-pts[i-1][0]) + '"}'
       elif(pts[i][0]-pts[i-1][0] < -horizontal_threshold):
-            payload +='{go right, ' + str(-(pts[i][0]-pts[i-1][0])) + '}'
+            payload += '{"action": "right", "value": "' + str(-(pts[i][0]-pts[i-1][0])) + '"}'
       thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
       cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
       cv2.putText(frame, w, (350, 350), cv2.FONT_HERSHEY_PLAIN, fontScale=1.5, color=(0, 100, 100), thickness=2)
@@ -100,8 +112,12 @@ def ball_pub():
         print("Please check data on your Subscriber Code \n")
     cv2.imshow("Frame", frame)  
     key = cv2.waitKey(1) & 0xFF
+    fps.stop()
+    # print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+    # print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
     if key == ord("q"):
         break
+    
   vs.release()
   cv2.destroyAllWindows()  
 
