@@ -37,7 +37,7 @@ def ball_pub():
   ap.add_argument("-d", "--display", type=int, default=-1,
 	help="Whether or not frames should be displayed")
   args = vars(ap.parse_args())
-  print("[INFO] sampling frames from webcam...")
+  # print("...")
   blueLower = (87, 78, 121)
   blueUpper = (255, 255, 255)
   # greenLower = (29, 86, 6)
