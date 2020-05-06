@@ -1,7 +1,6 @@
 from __future__ import print_function
 from imutils.video import WebcamVideoStream
 from imutils.video import VideoStream
-from imutils.video import FPS
 import paho.mqtt.client as paho
 from datetime import datetime
 from collections import deque
@@ -43,8 +42,8 @@ def ball_pub():
   # greenLower = (29, 86, 6)
   # greenUpper = (64, 255, 255)
   pts = deque(maxlen=args["buffer"])
-  vs = VideoStream(src=0).start()
-  fps = FPS().start()
+  vs = VideoStream(src=2).start()
+  vs.stream.set(cv2.CAP_PROP_FPS, 30)
   time.sleep(2)
   radius1 = 0
   while True:
@@ -63,7 +62,6 @@ def ball_pub():
     if args["display"] > 0:
       cv2.imshow("Frame", frame)
       key = cv2.waitKey(1) & 0xFF
-    fps.update()
     if len(cnts) > 0:
       payload = ''
       c = max(cnts, key=cv2.contourArea)
@@ -112,9 +110,6 @@ def ball_pub():
         print("Please check data on your Subscriber Code \n")
     cv2.imshow("Frame", frame)  
     key = cv2.waitKey(1) & 0xFF
-    fps.stop()
-    # print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
-    # print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
     if key == ord("q"):
         break
     
