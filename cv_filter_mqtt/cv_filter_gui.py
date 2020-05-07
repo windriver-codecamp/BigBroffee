@@ -45,14 +45,13 @@ client1.connect(broker,port,keepalive=60) #establishing connection
 
 cv.namedWindow(title_window)
 
+cv.createTrackbar(trackbar_name1, title_window , 87, alpha_slider_max, on_trackbar)
+cv.createTrackbar(trackbar_name2, title_window , 78, alpha_slider_max, on_trackbar)
+cv.createTrackbar(trackbar_name3, title_window , 121, alpha_slider_max, on_trackbar)
 
-cv.createTrackbar(trackbar_name1, title_window , 0, alpha_slider_max, on_trackbar)
-cv.createTrackbar(trackbar_name2, title_window , 0, alpha_slider_max, on_trackbar)
-cv.createTrackbar(trackbar_name3, title_window , 0, alpha_slider_max, on_trackbar)
-
-cv.createTrackbar(trackbar_name4, title_window , 0, alpha_slider_max, on_trackbar)
-cv.createTrackbar(trackbar_name5, title_window , 0, alpha_slider_max, on_trackbar)
-cv.createTrackbar(trackbar_name6, title_window , 0, alpha_slider_max, on_trackbar)
+cv.createTrackbar(trackbar_name4, title_window , 255, alpha_slider_max, on_trackbar)
+cv.createTrackbar(trackbar_name5, title_window , 255, alpha_slider_max, on_trackbar)
+cv.createTrackbar(trackbar_name6, title_window , 255, alpha_slider_max, on_trackbar)
 
 # Show some stuff
 on_trackbar(0)
