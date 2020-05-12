@@ -11,6 +11,12 @@ Copiaza fisierul mosquitto.conf in directorul de la paragraful anterior.
 source wrsdk-vxworks7-qemu/toolkit/wind_sdk_env.linux
 $CC mqtt_cb_client.c -o mqtt_cb_client.vxe -lmosquitto -lssl -lcrypto -ljson
 
+Sau varianta cu cmake:
+mkdir ball_follower_robot/mqtt_vxworks/build
+cd ball_follower_robot/mqtt_vxworks/build
+cmake ../
+make
+
 3. Deployment
 
 Copiaza toate binarele pe care vrei sa le rulezi in directorul de la sectiunea 1. Este acelasi director care apare si in comanda urmatoare qemu.
@@ -28,6 +34,11 @@ cmd
 set env LD_LIBRARY_PATH="/bd0a/lib"
 cd /bd0a
 mosquitto.vxe -c mosquitto.conf &
+
+/bd0a/lib in guestul VxWorks va fi mapat pe directorul de pe host: /home/dan/projects/cto/sdk/src/wrsdk-release-script/wrsdk-vxworks7-qemu-wrcc640/sdk/wrsdk-vxworks7-qemu-wrcc640/workspace/lib
+
+In acest director trebuie sa fie prezente librariile dinamice de care are nevoie mqtt_cb_client.vxe:
+libmosquitto.so.1, libssl.so.1, libjson.so.1 si libc.so.1.
 
 #pe host, sesiune telnet catre qemu:
 telnet 127.0.0.1 8023
