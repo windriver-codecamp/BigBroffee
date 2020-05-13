@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <script>
+            var myImageElement = document.getElementById('myImage');
+            //console.log(myImageElement);
+            var imageName = "/capturepy.png"
+            var refreshTime = "1000" // miliseconds
+
+        
+            setInterval(function () {
+                console.log("updating ...")
+                var myImageElement = document.getElementById('myImage');
+                myImageElement.src = imageName + '?' + new Date().getTime();
+            }, refreshTime);
+        </script>
+    </head>
+<body >
+    <img id="myImage" src="#" />
+</body>
+</html>
