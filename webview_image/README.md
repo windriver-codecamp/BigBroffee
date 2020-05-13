@@ -11,9 +11,11 @@ from the VxWorks shell run:
 ```
 
 In the capture.html there are two variables:
+
 **imageName** - points to the generated image name
+
 **refreshTime** - is the refresh time in miliseconds
 
-Open the your browser at http://rasp_ip/capture.html
 
+Open the your browser at http://rasp_ip/capture.html
 
