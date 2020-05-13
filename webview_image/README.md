@@ -10,6 +10,10 @@ from the VxWorks shell run:
 [vxWorks *]# python3 -m http.server 80
 ```
 
+In the capture.html there are two variables:
+**imageName** - points to the generated image name
+**refreshTime** - is the refresh time in miliseconds
+
 Open the your browser at http://rasp_ip/capture.html
 
 
