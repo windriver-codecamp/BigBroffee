@@ -2,10 +2,6 @@
 
 Copiaza fisierele din qemu_ia_sdk in SDK-ul tau. Va fi nevoie sa copiezi fisierele cu numele care incepe cu libjson din qemu_ia_sdk/toolkit/include/usr/lib/common si in ./export/root/lib (directorul produs de buildul de ROS2)
 
-Schimba calea /home/dan/projects/cto/sdk/src/wrsdk-release-script/wrsdk-vxworks7-qemu-wrcc640/sdk/wrsdk-vxworks7-qemu-wrcc640/workspace cu o cale catre un director ales de tine. De exemplu la ROS2 va fi calea catre ./export/root
-
-Copiaza fisierul mosquitto.conf in directorul de la paragraful anterior.
-
 2. Subscriber MQTT - va face parte din control.cpp 
 
 source wrsdk-vxworks7-qemu/toolkit/wind_sdk_env.linux
@@ -19,7 +15,9 @@ make
 
 3. Deployment
 
-Copiaza toate binarele pe care vrei sa le rulezi in directorul de la sectiunea 1. Este acelasi director care apare si in comanda urmatoare qemu.
+Copiaza fisierul mosquitto.conf in directorul de la paragraful 1.
+
+Copiaza toate binarele pe care vrei sa le rulezi in directorul de la sectiunea 1. Este acelasi director care apare si in comanda urmatoare qemu. Schimba calea /home/dan/projects/cto/sdk/src/wrsdk-release-script/wrsdk-vxworks7-qemu-wrcc640/sdk/wrsdk-vxworks7-qemu-wrcc640/workspace cu o cale catre un director ales de tine. De exemplu la ROS2 va fi calea catre ./export/root.
 
 qemu-system-x86_64 -m 512M  -kernel bsps/itl_generic_2_0_2_1/boot/vxWorks -net nic \
 -net user,hostfwd=tcp::1534-:1534,hostfwd=tcp:127.0.0.1:8023-:23,hostfwd=tcp::11883-:1883 \
