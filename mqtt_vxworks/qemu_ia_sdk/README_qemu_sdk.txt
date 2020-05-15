@@ -15,7 +15,7 @@ make
 
 3. Deployment
 
-Copiaza fisierul mosquitto.conf in directorul de la paragraful 1.
+Copiaza fisierele mosquitto.vxe si mosquitto.conf in directorul de la paragraful 1.
 
 Copiaza toate binarele pe care vrei sa le rulezi in directorul de la sectiunea 1. Este acelasi director care apare si in comanda urmatoare qemu. Schimba calea /home/dan/projects/cto/sdk/src/wrsdk-release-script/wrsdk-vxworks7-qemu-wrcc640/sdk/wrsdk-vxworks7-qemu-wrcc640/workspace cu o cale catre un director ales de tine. De exemplu la ROS2 va fi calea catre ./export/root.
 
