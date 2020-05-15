@@ -94,19 +94,92 @@ int sonar_read = 0;
 //     rclcpp::Subscription<turtlebot3_msgs::msg::SensorState>::SharedPtr subscription_;
 // };
 
-// Subscriber mqtt from minimal subscriber ros2
-#include "std_msgs/msg/string.hpp"
-rclcpp::Node::SharedPtr mqtt_node = nullptr;
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// copiat din mqtt_cb_client.c
 
-void topic_callback(const std_msgs::msg::String::SharedPtr msg)
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "mosquitto.h"
+#include <jansson.h>
+
+/*
+{"action": "right", "value": "10"}
+sau
+{"action": "right", "value": 10}
+ */
+
+#define ACTION_TAG "action"
+#define VALUE_TAG "value"
+#define QUIT_TAG "quit"
+
+static struct mosquitto *mosq = NULL;
+
+int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *msg)
 {
-  RCLCPP_INFO(mqtt_node->get_logger(), "I heard: '%s'", msg->data.c_str());
+	json_t *root;
+	json_t *val;
+	const char *key;
+	json_error_t jerr;
+	char *str = (char *)msg->payload;
+	char *action = NULL;
+	char *value = NULL;
+	int num_val = 0;
+
+	if (str == NULL)
+		return -1;
+
+#ifdef DEBUG
+	printf("%s %s (%d)\n", msg->topic, (const char *)msg->payload, msg->payloadlen);
+#endif
+
+	root = json_loads(msg->payload, 0, &jerr);
+	if (NULL == root) {
+        printf("%s:%d - error: on line %d: %s\n", __FUNCTION__, __LINE__, jerr.line, jerr.text);
+        return 0;
+    }
+
+    json_object_foreach(root, key, val) {
+		if (strncmp(key, QUIT_TAG, strlen(QUIT_TAG)) == 0) {
+			printf("%s:%d -> quit\n", __FUNCTION__, __LINE__);
+			mosquitto_disconnect(mosq);
+			mosquitto_destroy(mosq);
+			mosquitto_lib_cleanup();
+			exit(0);
+		}
+		if (strncmp(key, ACTION_TAG, strlen(ACTION_TAG)) == 0) {
+			if (json_is_string(val)) {
+				action = strdup(json_string_value(val));
+			}
+		} else if (strncmp(key, VALUE_TAG, strlen(VALUE_TAG)) == 0) {
+			if (json_is_string(val)) {
+				value = strdup(json_string_value(val));
+				if (value) {
+					num_val = atoi(value);
+				}
+			} else if (json_is_integer(val)) {
+				num_val = json_integer_value(val);
+			}
+		}
+	}
+
+	printf("%s:%d - action = %s num_val = %d\n", __FILE__, __LINE__, action, num_val);
+
+	if (action)
+		free(action);
+	if (value)
+		free(value);
+
+
+
+	return 0;
 }
-// din codul lui dan trebuie pus aici subscriberul
-//trebuie publisher ros
-//trebuie făcut folder în repo git pentru chestiile care le fac eu http://bitbucket.wrs.com/users/mdragusu/repos/ball_follower_robot/browse într-un folder aici
-// trimit mesaj în mqtt
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+// din codul lui dan trebuie adaptat aici subscriberul mqtt, va trebui publisher ros control_pub, ăstea două vor comunica una cu cealaltă indirect, fiind în acelaşi fişier sursă
 //trebuie să am grijă cum copiez lib-urile în sdk, am tot ce-mi trebuie în repo, trebuie modificat cmakefile-ul puţin
+// pastrez doar control_pub
+// in callback-ul de la subscriberul MQTT va fi logica de reactionat la detectie, iar control_pub va fi folosit sa dea comenzi mai departe la "motoare"
 
 double get_time_now()
 {
@@ -214,9 +287,7 @@ int main(int argc, char **argv)
     // auto node_sub = std::make_shared<LidarSubscriber>();
     // auto sonar_node_sub = std::make_shared<SonarSubscriber>();
     auto control_pub = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
-    mqtt_node = rclcpp::Node::make_shared("minimal_subscriber");
-  auto subscription =
-    mqtt_node->create_subscription<std_msgs::msg::String>("MQTT", 10, topic_callback);
+    //aici se crează publisher-ul, iar în while-ul de rclcpp::ok() va fi publisher->publish(message);
 
     rclcpp::WallRate loop_rate(100);
     geometry_msgs::msg::Twist msg;
@@ -227,13 +298,43 @@ int main(int argc, char **argv)
     float batt_consume = 0;
 
     float prev_lin_vel = 0;
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // copiat din mqtt_cb_client.c
+    int rc;
+
+	mosquitto_lib_init();
+	
+	mosq = mosquitto_new(NULL, true, NULL);
+	if (!mosq) {
+		fprintf(stderr, "Error: Out of memory.\n");
+		return 1;
+	}
+
+	char *ipaddr = "127.0.0.1";
+	
+	rc = mosquitto_subscribe_callback(
+			on_message, NULL,
+			"/bb", 0,
+			ipaddr, 1883,
+			NULL, 60, true,
+			NULL, NULL,
+			NULL, NULL);
+
+	if (rc) {
+		printf("Error: %s\n", mosquitto_strerror(rc));
+	}
+
+	mosquitto_loop_forever(mosq, -1, 1);
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
     while (rclcpp::ok())
     {
 
         // rclcpp::spin_some(node_sub);
         // rclcpp::spin_some(sonar_node_sub);
         rclcpp::spin_some(node);
-        rclcpp::spin(mqtt_node);//added
 
         /*autonoumous mode*/
         if (lidar_read == 1 && (manual_mode == 0 || manual_mode == 2))
@@ -500,6 +601,10 @@ int main(int argc, char **argv)
             
     }
     rclcpp::shutdown();
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    mosquitto_destroy(mosq);
+	mosquitto_lib_cleanup();
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     return 0;
 }
