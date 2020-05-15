@@ -96,13 +96,14 @@ int sonar_read = 0;
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // copiat din mqtt_cb_client.c
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include "mosquitto.h"
-#include <jansson.h>
-
+// am găsit că extern "C" e necesar pentru headere scrise în C folosite în fişiere cpp
+extern "C"{
+    #include <stdlib.h>
+    #include <stdio.h>
+    #include <string.h>
+    #include "mosquitto.h"
+    #include <jansson.h>
+}
 /*
 {"action": "right", "value": "10"}
 sau
@@ -602,6 +603,7 @@ int main(int argc, char **argv)
     }
     rclcpp::shutdown();
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // copiat din mqtt_cb_client.c
     mosquitto_destroy(mosq);
 	mosquitto_lib_cleanup();
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
