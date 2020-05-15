@@ -134,7 +134,7 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
 	printf("%s %s (%d)\n", msg->topic, (const char *)msg->payload, msg->payloadlen);
 #endif
 
-	root = json_loads(msg->payload, 0, &jerr);
+	root = json_loads((char *)msg->payload, 0, &jerr);
 	if (NULL == root) {
         printf("%s:%d - error: on line %d: %s\n", __FUNCTION__, __LINE__, jerr.line, jerr.text);
         return 0;
@@ -312,7 +312,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	char *ipaddr = "127.0.0.1";
+	char const *ipaddr = "127.0.0.1";
 	
 	rc = mosquitto_subscribe_callback(
 			on_message, NULL,
