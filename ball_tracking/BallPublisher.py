@@ -62,8 +62,6 @@ def ball_pub():
     liss = [int(i.strip()) for i in lis]
     blueLower = (liss[0], liss[1], liss[2])
     blueUpper = (liss[3], liss[4], liss[5])
-    # print("Lower "+str(blueLower))
-    # print("Upper "+str(blueUpper))
     if frame is None:
         break
     frame = imutils.resize(frame, width = horizontal_limit)
@@ -75,9 +73,15 @@ def ball_pub():
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
     center = None
-    if args["display"] > 0:
-      cv2.imshow("Frame", frame)
-      key = cv2.waitKey(30) & 0xFF
+    mask = imutils.resize(mask, width=horizontal_limit)
+    mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
+    imgs = [frame, mask]
+    foo_height, foo_width = imgs[0].shape[:2]
+    bar_height, bar_width = imgs[1].shape[:2]
+    pano = np.zeros((foo_height, foo_width+bar_width, 3), np.uint8)
+    pano = np.hstack((imgs[0], imgs[1]))
+    cv2.imshow("Result", pano)
+    key = cv2.waitKey(1) & 0xFF
     if len(cnts) > 0:
       payload = ''
       c = max(cnts, key=cv2.contourArea)
@@ -124,7 +128,7 @@ def ball_pub():
         ret = client1.publish(topic,payload)
         print(payload)
         print("Please check data on your Subscriber Code \n")
-    cv2.imshow("Frame", frame)  
+    cv2.imshow("Result", pano)  
     key = cv2.waitKey(1) & 0xFF
     if key == ord("q"):
         break
