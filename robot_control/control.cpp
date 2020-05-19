@@ -36,8 +36,6 @@ int control_device = 3;
 // taken out of main
 auto node = rclcpp::Node::make_shared("control_node");
 auto control_pub = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
-rclcpp::WallRate loop_rate(100);
-geometry_msgs::msg::Twist msg;
 float checkLinearLimitVelocity(float);
 float checkAngularLimitVelocity(float);
 
@@ -114,7 +112,7 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
 			}
 		}
 	}
-
+    geometry_msgs::msg::Twist mesg;
     int motionType = 0;
     if (strncmp(action, ANGULAR_LEFT, strlen(ANGULAR_LEFT)) == 0){
         motionType = 1;
@@ -134,29 +132,29 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
         case 1:
             target_angular_vel = target_angular_vel + num_val;
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
-            msg.angular.z = target_angular_vel;
+            mesg.angular.z = target_angular_vel;
             break;
         case 2:
             target_angular_vel = target_angular_vel - num_val;
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
-            msg.angular.z = target_angular_vel;
+            mesg.angular.z = target_angular_vel;
             break;
         // linear motion
         case 3:
             target_linear_vel = target_linear_vel + num_val;
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
-            msg.linear.x = target_linear_vel;
+            mesg.linear.x = target_linear_vel;
             break;
         case 4:
             target_linear_vel = target_linear_vel - num_val;
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
-            msg.linear.x = target_linear_vel;
+            mesg.linear.x = target_linear_vel;
             break;
         default:
             break;
     }
     // need to change msg to not use the one from mosquitto, but the global Twist msg here
-    control_pub->publish(msg);
+    control_pub->publish(mesg);
     motionType = 0;
     //to add ros message load here, using action and num_val, depending on action, case specific
 	printf("%s:%d - action = %s num_val = %d\n", __FILE__, __LINE__, action, num_val);
@@ -230,6 +228,8 @@ int main(int argc, char **argv){
     rclcpp::init(argc, argv);
     float turn = 0;
 
+    rclcpp::WallRate loop_rate(100);
+    geometry_msgs::msg::Twist msg;
     int manual_mode = 0;
     // float batt_consume = 0;
 
