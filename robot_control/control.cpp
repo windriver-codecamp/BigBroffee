@@ -34,8 +34,8 @@ int y_axis_max = 32767;
 
 int control_device = 3;
 // taken out of main
-auto node = rclcpp::Node::make_shared("control_node");
-auto control_pub = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+auto node;
+auto control_pub;
 float checkLinearLimitVelocity(float);
 float checkAngularLimitVelocity(float);
 
@@ -226,6 +226,8 @@ int main(int argc, char **argv){
     identify_gamepad();
 
     rclcpp::init(argc, argv);
+    auto node = rclcpp::Node::make_shared("control_node");
+    auto control_pub = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
     float turn = 0;
 
     rclcpp::WallRate loop_rate(100);
