@@ -35,7 +35,6 @@ int y_axis_max = 32767;
 int control_device = 3;
 // taken out of main
 
-// cplm?
 float checkLinearLimitVelocity(float);
 float checkAngularLimitVelocity(float);
 std::shared_ptr<rclcpp::Node> node;
