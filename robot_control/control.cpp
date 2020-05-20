@@ -34,11 +34,11 @@ int y_axis_max = 32767;
 
 int control_device = 3;
 // taken out of main
-auto node;
-auto control_pub;
+
+// cplm?
 float checkLinearLimitVelocity(float);
 float checkAngularLimitVelocity(float);
-
+std::shared_ptr<rclcpp::Node> node;
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // from mqtt_cb_client.c
 extern "C"{
@@ -73,6 +73,8 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
 	char *action = NULL;
 	char *value = NULL;
 	int num_val = 0;
+    static auto control_pub = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+
 
 	if (str == NULL)
 		return -1;
@@ -193,7 +195,7 @@ float checkAngularLimitVelocity(float vel){
 
     return vel;
 }
-    
+
 int main(int argc, char **argv){
     int key = -1;
     int last_key = 0;
@@ -227,7 +229,7 @@ int main(int argc, char **argv){
 
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("control_node");
-    auto control_pub = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+    // auto control_pub = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
     float turn = 0;
 
     rclcpp::WallRate loop_rate(100);
@@ -401,11 +403,11 @@ int main(int argc, char **argv){
             time_now = get_time_now();
             /*print area end */
         }
+        //disabled publisher here for manual, control_pub is statically declared in mqtt's on_message function
+        // msg.linear.x = target_linear_vel;
+        // msg.angular.z = target_angular_vel;
 
-        msg.linear.x = target_linear_vel;
-        msg.angular.z = target_angular_vel;
-
-        control_pub->publish(msg);
+        // control_pub->publish(msg);
 
         if (control_device == 1)
         {
