@@ -3,7 +3,7 @@ import numpy as np
 import time
 import cv2
 import os
-import json
+
 
 broker="localhost"
 topic="frame"
@@ -25,8 +25,7 @@ def frame_pub():
     ret, frame = cap.read()
     if frame is None:
       break
-    frame_list = frame.tolist()
-    payload = json.dumps(frame_list)
+    payload = frame.tobytes()
     if(payload != ''):
         ret = client1.publish(topic,payload)
 
