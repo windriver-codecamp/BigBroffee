@@ -1,6 +1,6 @@
 1. Update SDK
 
-Copy the files in rpi4_sdk to your Raspberry Pi 4 SDK and then update the SD card (you need to copy the files in rpi4_sdk/bsps/rpi_4_0_1_1_0/boot/sdcard/ to the SD card you use to boot the rpi)
+Copy the files in ball_follower_robot/rpi4_sdk to your Raspberry Pi 4 SDK and then update the SD card (you need to copy the files in rpi4_sdk/bsps/rpi_4_0_1_1_0/boot/sdcard/ to the SD card you use to boot the rpi)
 
 2. MQT client app for VxWorks
 

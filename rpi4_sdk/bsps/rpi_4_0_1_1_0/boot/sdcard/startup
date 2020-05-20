@@ -1,0 +1,3 @@
+xbdRamDiskDevCreate(512, 0x1000000,  0, "/ramdisk")
+dosFsVolFormat "/ramdisk"
+
