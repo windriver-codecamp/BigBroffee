@@ -33,7 +33,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASIO_STANDALONE")
 
 add_executable(obj_avoid_t3 ./control.cpp ./keyboard_event.cpp ./gamepad_event.cpp)
 target_link_libraries(obj_avoid_t3 mosquitto ssl crypto json)
-#modificat
+#modified
 
 ament_target_dependencies(obj_avoid_t3
   hlds_laser_publisher
@@ -45,6 +45,10 @@ ament_target_dependencies(obj_avoid_t3
   turtlebot3_msgs
   yaml
 )
+
+#added for testing purposes
+add_executable(test_subscriber testsubscriber.cpp)
+ament_target_dependencies(test_subscriber rclcpp sensor_msgs)
 
 ################################################################################
 # Install
