@@ -3,8 +3,8 @@
 
 rclcpp::Node::SharedPtr g_node = nullptr;
 
-void topic_callback(const geometry_msgs::msg::Twist::SharedPtr msg){
-    RCLCPP_INFO(g_node->get_logger(), "I received: linear '%d' and angular '%d'\n", msg->linear.x, msg->angular.z);
+void topic_callback(const geometry_msgs::msg::Twist::SharedPtr mesg){
+    RCLCPP_INFO(g_node->get_logger(), "I received: linear '%f' and angular '%f'\n", mesg->linear.x, mesg->angular.z);
 }
 
 int main(int argc, char * argv[]){

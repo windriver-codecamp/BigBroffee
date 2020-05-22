@@ -73,7 +73,7 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
 	char *value = NULL;
 	int num_val = 0;
     static auto control_pub = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
-
+    geometry_msgs::msg::Twist mesg;
 
 	if (str == NULL)
 		return -1;
@@ -113,7 +113,6 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
 			}
 		}
 	}
-    geometry_msgs::msg::Twist mesg;
     int motionType = 0;
     if (strncmp(action, ANGULAR_LEFT, strlen(ANGULAR_LEFT)) == 0){
         motionType = 1;
@@ -127,26 +126,31 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
     else if (strncmp(action, LINEAR_DOWN, strlen(LINEAR_DOWN)) == 0){
         motionType = 4;
     } 
-    // this last else if just in case action submitted by mqtt subscriber isn't recognized, robot doesn't backpedal by default
     switch (motionType){
         // angular motion
         case 1:
+        // left
             target_angular_vel = target_angular_vel + num_val;
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
             mesg.angular.z = target_angular_vel;
+            // printf("target_angular_vel= %f \n",target_angular_vel);
             break;
         case 2:
+        // right
             target_angular_vel = target_angular_vel - num_val;
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
             mesg.angular.z = target_angular_vel;
+            // printf("target_angular_vel= %f \n",target_angular_vel);
             break;
         // linear motion
         case 3:
+        // up
             target_linear_vel = target_linear_vel + num_val;
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
             mesg.linear.x = target_linear_vel;
             break;
         case 4:
+        // down
             target_linear_vel = target_linear_vel - num_val;
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
             mesg.linear.x = target_linear_vel;
@@ -154,11 +158,10 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
         default:
             break;
     }
-    // need to change msg to not use the one from mosquitto, but the global Twist msg here
+    // printf("linear x = %f and angular z= %f \n",mesg.linear.x,mesg.angular.z);
     control_pub->publish(mesg);
     motionType = 0;
-    //to add ros message load here, using action and num_val, depending on action, case specific
-	printf("%s:%d - action = %s num_val = %d\n", __FILE__, __LINE__, action, num_val);
+	// printf("%s:%d - action = %s num_val = %d\n", __FILE__, __LINE__, action, num_val);
 
 	if (action)
 		free(action);
@@ -227,7 +230,7 @@ int main(int argc, char **argv){
     identify_gamepad();
 
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("control_node");
+    node = rclcpp::Node::make_shared("control_node");
     // auto control_pub = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
     float turn = 0;
 
