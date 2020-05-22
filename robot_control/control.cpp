@@ -231,7 +231,7 @@ int main(int argc, char **argv){
 
     rclcpp::init(argc, argv);
     node = rclcpp::Node::make_shared("control_node");
-    // auto control_pub = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+    auto control_pub_man = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
     float turn = 0;
 
     rclcpp::WallRate loop_rate(100);
@@ -405,11 +405,10 @@ int main(int argc, char **argv){
             time_now = get_time_now();
             /*print area end */
         }
-        //disabled publisher here for manual, control_pub is statically declared in mqtt's on_message function
-        // msg.linear.x = target_linear_vel;
-        // msg.angular.z = target_angular_vel;
+        msg.linear.x = target_linear_vel;
+        msg.angular.z = target_angular_vel;
 
-        // control_pub->publish(msg);
+        control_pub_man->publish(msg);
 
         if (control_device == 1)
         {
