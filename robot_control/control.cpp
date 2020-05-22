@@ -132,14 +132,12 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
         // left
             target_angular_vel = target_angular_vel + num_val;
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
-            mesg.angular.z = target_angular_vel;
             // printf("target_angular_vel= %f \n",target_angular_vel);
             break;
         case 2:
         // right
             target_angular_vel = target_angular_vel - num_val;
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
-            mesg.angular.z = target_angular_vel;
             // printf("target_angular_vel= %f \n",target_angular_vel);
             break;
         // linear motion
@@ -147,17 +145,17 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
         // up
             target_linear_vel = target_linear_vel + num_val;
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
-            mesg.linear.x = target_linear_vel;
             break;
         case 4:
         // down
             target_linear_vel = target_linear_vel - num_val;
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
-            mesg.linear.x = target_linear_vel;
             break;
         default:
             break;
     }
+    mesg.linear.x = target_linear_vel;
+    mesg.angular.z = target_angular_vel;
     // printf("linear x = %f and angular z= %f \n",mesg.linear.x,mesg.angular.z);
     control_pub->publish(mesg);
     motionType = 0;
@@ -272,9 +270,8 @@ int main(int argc, char **argv){
 
 
     while (rclcpp::ok()){
+        rclcpp::spin_some(node);
         mosquitto_loop(mosq, -1, 1);
-        // rclcpp::spin_some(node);
-
         /*manual control*/
         switch (key)
         {
