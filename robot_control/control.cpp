@@ -267,12 +267,12 @@ int main(int argc, char **argv){
 		printf("Error: %s\n", mosquitto_strerror(rc));
 	}
 
-	mosquitto_loop_forever(mosq, -1, 1);
+	
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
     while (rclcpp::ok()){
-
+        mosquitto_loop(mosq, -1, 1);
         // rclcpp::spin_some(node);
 
         /*manual control*/
