@@ -130,25 +130,25 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
         // angular motion
         case 1:
         // left
-            target_angular_vel = target_angular_vel + num_val;
+            target_angular_vel = target_angular_vel + ANG_VEL_STEP_SIZE * num_val;
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
             // printf("target_angular_vel= %f \n",target_angular_vel);
             break;
         case 2:
         // right
-            target_angular_vel = target_angular_vel - num_val;
+            target_angular_vel = target_angular_vel - ANG_VEL_STEP_SIZE * num_val;
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
             // printf("target_angular_vel= %f \n",target_angular_vel);
             break;
         // linear motion
         case 3:
         // up
-            target_linear_vel = target_linear_vel + num_val;
+            target_linear_vel = target_linear_vel + LIN_VEL_STEP_SIZE * num_val;
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
             break;
         case 4:
         // down
-            target_linear_vel = target_linear_vel - num_val;
+            target_linear_vel = target_linear_vel - LIN_VEL_STEP_SIZE * num_val;
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
             break;
         default:
@@ -264,14 +264,19 @@ int main(int argc, char **argv){
 	if (rc) {
 		printf("Error: %s\n", mosquitto_strerror(rc));
 	}
-
+    //tried placing loop here
 	
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
     while (rclcpp::ok()){
         rclcpp::spin_some(node);
+
+        //mosquitto loop
         mosquitto_loop(mosq, -1, 1);
+        printf("Manual mode test \n");
+        // mosquitto_loop still causes deadlock though. Tried placing it outside as well.
+
         /*manual control*/
         switch (key)
         {
