@@ -126,34 +126,55 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
     else if (strncmp(action, LINEAR_DOWN, strlen(LINEAR_DOWN)) == 0){
         motionType = 4;
     } 
-    switch (motionType){
-        // angular motion
-        case 1:
-        // left
-            target_angular_vel = target_angular_vel + ANG_VEL_STEP_SIZE * num_val;
-            target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
-            // printf("target_angular_vel= %f \n",target_angular_vel);
-            break;
-        case 2:
-        // right
-            target_angular_vel = target_angular_vel - ANG_VEL_STEP_SIZE * num_val;
-            target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
-            // printf("target_angular_vel= %f \n",target_angular_vel);
-            break;
-        // linear motion
-        case 3:
-        // up
-            target_linear_vel = target_linear_vel + LIN_VEL_STEP_SIZE * num_val;
-            target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
-            break;
-        case 4:
-        // down
-            target_linear_vel = target_linear_vel - LIN_VEL_STEP_SIZE * num_val;
-            target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
-            break;
-        default:
-            break;
+    if (num_val == 0){
+        switch (motionType){
+            // angular motion
+            case 1:
+            case 2:
+            // left or right
+                target_angular_vel = 0;
+                break;
+            case 3:
+            case 4:
+            // up or down
+                target_linear_vel = 0;
+                break;
+            default:
+                break;
+        }
     }
+    else {
+        switch (motionType){
+            // angular motion
+            case 1:
+            // left
+                target_angular_vel = target_angular_vel + ANG_VEL_STEP_SIZE;
+                target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
+                // printf("target_angular_vel= %f \n",target_angular_vel);
+                break;
+            case 2:
+            // right
+            // * num_val 
+                target_angular_vel = target_angular_vel - ANG_VEL_STEP_SIZE;
+                target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
+                // printf("target_angular_vel= %f \n",target_angular_vel);
+                break;
+            // linear motion
+            case 3:
+            // up
+                target_linear_vel = target_linear_vel + LIN_VEL_STEP_SIZE;
+                target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
+                break;
+            case 4:
+            // down
+                target_linear_vel = target_linear_vel - LIN_VEL_STEP_SIZE;
+                target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
+                break;
+            default:
+                break;
+        }
+    }
+    
     mesg.linear.x = target_linear_vel;
     mesg.angular.z = target_angular_vel;
     // printf("linear x = %f and angular z= %f \n",mesg.linear.x,mesg.angular.z);
@@ -268,7 +289,7 @@ int main(int argc, char **argv){
 	
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
+    printf("Mqtt subscriber ready. \n");
     while (rclcpp::ok()){
         rclcpp::spin_some(node);
 
