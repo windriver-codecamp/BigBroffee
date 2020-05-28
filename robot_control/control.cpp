@@ -17,6 +17,9 @@ float BURGER_MAX_ANG_VEL_NEG = -1.84;
 float LIN_VEL_STEP_SIZE = 0.01;
 float ANG_VEL_STEP_SIZE = 0.1;
 
+float ANG_DEFAULT_SPEED= 0.35;
+float LIN_DEFAULT_SPEED= 0.03;
+
 float P = 0.025;
 
 float lidar_min_range = 0.5;
@@ -148,26 +151,26 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
             // angular motion
             case 1:
             // left
-                target_angular_vel = target_angular_vel + ANG_VEL_STEP_SIZE;
+                target_angular_vel = ANG_DEFAULT_SPEED;
                 target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
                 // printf("target_angular_vel= %f \n",target_angular_vel);
                 break;
             case 2:
             // right
             // * num_val 
-                target_angular_vel = target_angular_vel - ANG_VEL_STEP_SIZE;
+                target_angular_vel = - ANG_DEFAULT_SPEED;
                 target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
                 // printf("target_angular_vel= %f \n",target_angular_vel);
                 break;
             // linear motion
             case 3:
             // up
-                target_linear_vel = target_linear_vel + LIN_VEL_STEP_SIZE;
+                target_linear_vel = LIN_DEFAULT_SPEED;
                 target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
                 break;
             case 4:
             // down
-                target_linear_vel = target_linear_vel - LIN_VEL_STEP_SIZE;
+                target_linear_vel = - LIN_DEFAULT_SPEED;
                 target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
                 break;
             default:
