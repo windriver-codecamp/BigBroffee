@@ -17,8 +17,8 @@ float BURGER_MAX_ANG_VEL_NEG = -1.84;
 float LIN_VEL_STEP_SIZE = 0.01;
 float ANG_VEL_STEP_SIZE = 0.1;
 
-float ANG_DEFAULT_SPEED= 0.35;
-float LIN_DEFAULT_SPEED= 0.03;
+float ANG_DEFAULT_SPEED = 0.35;
+float LIN_DEFAULT_SPEED = 0.03;
 
 float P = 0.025;
 
@@ -66,7 +66,7 @@ or
 
 static struct mosquitto *mosq = NULL;
 
-int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *msg){
+void on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *msg){
 	json_t *root;
 	json_t *val;
 	const char *key;
@@ -79,7 +79,7 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
     geometry_msgs::msg::Twist mesg;
 
 	if (str == NULL)
-		return -1;
+		return;
 
 #ifdef DEBUG
 	printf("%s %s (%d)\n", msg->topic, (const char *)msg->payload, msg->payloadlen);
@@ -88,7 +88,7 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
 	root = json_loads((char *)msg->payload, 0, &jerr);
 	if (NULL == root) {
         printf("%s:%d - error: on line %d: %s\n", __FUNCTION__, __LINE__, jerr.line, jerr.text);
-        return 0;
+        return;
     }
 
     json_object_foreach(root, key, val) {
@@ -158,7 +158,7 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
             case 2:
             // right
             // * num_val 
-                target_angular_vel = - ANG_DEFAULT_SPEED;
+                target_angular_vel = -ANG_DEFAULT_SPEED;
                 target_angular_vel = checkAngularLimitVelocity(target_angular_vel);
                 // printf("target_angular_vel= %f \n",target_angular_vel);
                 break;
@@ -170,7 +170,7 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
                 break;
             case 4:
             // down
-                target_linear_vel = - LIN_DEFAULT_SPEED;
+                target_linear_vel = -LIN_DEFAULT_SPEED;
                 target_linear_vel = checkLinearLimitVelocity(target_linear_vel);
                 break;
             default:
@@ -189,7 +189,7 @@ int on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_me
 		free(action);
 	if (value)
 		free(value);
-	return 0;
+	return;
 }
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -266,9 +266,7 @@ int main(int argc, char **argv){
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // connection from mqtt_cb_client.c
     int rc;
-
 	mosquitto_lib_init();
-	
 	mosq = mosquitto_new(NULL, true, NULL);
 	if (!mosq) {
 		fprintf(stderr, "Error: Out of memory.\n");
@@ -276,7 +274,11 @@ int main(int argc, char **argv){
 	}
 
 	char const *ipaddr = "127.0.0.1";
-	
+#if 1
+    mosquitto_message_callback_set(mosq, on_message);
+    mosquitto_connect(mosq, ipaddr, 1883, 60);
+	mosquitto_subscribe(mosq, NULL, "/bb", 0);
+#else
 	rc = mosquitto_subscribe_callback(
 			on_message, NULL,
 			"/bb", 0,
@@ -284,23 +286,14 @@ int main(int argc, char **argv){
 			NULL, 60, true,
 			NULL, NULL,
 			NULL, NULL);
-
-	if (rc) {
+	if (!rc) {
 		printf("Error: %s\n", mosquitto_strerror(rc));
 	}
-    //tried placing loop here
-	
+#endif	
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    printf("Mqtt subscriber ready. \n");
     while (rclcpp::ok()){
         rclcpp::spin_some(node);
-
-        //mosquitto loop
-        mosquitto_loop(mosq, -1, 1);
-        printf("Manual mode test \n");
-        // mosquitto_loop still causes deadlock though. Tried placing it outside as well.
-
+        mosquitto_loop(mosq, 0, 1);
         /*manual control*/
         switch (key)
         {
@@ -401,7 +394,7 @@ int main(int argc, char **argv){
 
         if (get_time_now() - time_now > loop_refresh){     
             printf("\033[2J");
-            printf("\033[1;1H");     
+            printf("\033[1;1H");
             /*print area start */
             // removed battery code -sensor reliant
 
@@ -434,7 +427,10 @@ int main(int argc, char **argv){
         msg.linear.x = target_linear_vel;
         msg.angular.z = target_angular_vel;
 
-        control_pub_man->publish(msg);
+        if (key != -1) 
+        {
+            control_pub_man->publish(msg);
+        }
 
         if (control_device == 1)
         {
