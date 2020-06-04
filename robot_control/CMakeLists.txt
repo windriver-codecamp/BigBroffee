@@ -2,7 +2,7 @@
 # Set minimum required version of cmake, project name and compile options
 ################################################################################
 cmake_minimum_required(VERSION 3.5)
-project(obj_avoid_t3)
+project(t3_control)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -31,11 +31,11 @@ include_directories(
 )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASIO_STANDALONE") 
 
-add_executable(obj_avoid_t3 ./control.cpp ./keyboard_event.cpp ./gamepad_event.cpp)
-target_link_libraries(obj_avoid_t3 mosquitto ssl crypto json)
+add_executable(t3_control ./control.cpp ./keyboard_event.cpp ./gamepad_event.cpp)
+target_link_libraries(t3_control mosquitto ssl crypto json)
 #modified
 
-ament_target_dependencies(obj_avoid_t3
+ament_target_dependencies( t3_control
   hlds_laser_publisher
   rclcpp
   std_msgs
@@ -55,7 +55,7 @@ ament_target_dependencies(test_subscriber rclcpp sensor_msgs)
 ################################################################################
 
 install(
-  TARGETS obj_avoid_t3
+  TARGETS t3_control
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
