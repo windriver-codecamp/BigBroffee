@@ -11,17 +11,20 @@ import time
 import cv2
 import os
 
-broker="localhost" 
+broker="127.0.0.1" 
 topic="test"
 topic2="filter"
+topic_frame="frame"
 port=1883
 horizontal_threshold = 10
 radius_threshold = 5
-horizontal_limit = 500
-vertical_limit = 400
+horizontal_limit = 320
+vertical_limit = 240
 normal_radius_threshold = 40
 close_radius_threshold = 55
 mes = "87, 78, 121, 255, 255, 255"
+
+
 
 def on_message(client, userdata, message):
     global mes
@@ -30,7 +33,11 @@ def on_message(client, userdata, message):
     mes =str(message.payload.decode("utf-8"))
 
 def on_publish(client,userdata,result):
-  print("Published data is : ")
+  #print("Published data is : ")
+  pass
+
+def on_publish_frame(client,userdata,result):
+  #print("Published data is : ")
   pass
 
 def ball_pub():
@@ -43,6 +50,12 @@ def ball_pub():
   client2.connect(broker, port, keepalive=60)
   print("Subscribing begins here")    
   client2.subscribe(topic2)
+
+  client3= paho.Client("frame_pub")
+  client3.on_publish = on_publish_frame
+  client3.connect(broker,port,keepalive=60)
+
+
   ap = argparse.ArgumentParser()
   ap.add_argument("-b", "--buffer", type=int, default=64, help="max buffer size")
   ap.add_argument("-n", "--num-frames", type=int, default=100,
@@ -53,17 +66,22 @@ def ball_pub():
   pts = deque(maxlen=args["buffer"])
   vs = VideoStream(src=0).start()
   vs.stream.set(cv2.CAP_PROP_FPS, 30)
+
   time.sleep(2)
   radius1 = 0
   while True:
-    frame = vs.read()
+    frame1 = vs.read()
     client2.loop_start()
     lis = (mes.split(','))
     liss = [int(i.strip()) for i in lis]
     blueLower = (liss[0], liss[1], liss[2])
     blueUpper = (liss[3], liss[4], liss[5])
-    if frame is None:
+    if frame1 is None:
         break
+    if frame1.shape[2] == 4:
+        frame = cv2.cvtColor(frame1, cv2.COLOR_BGRA2BGR)
+    else:
+        frame = frame1
     frame = imutils.resize(frame, width = horizontal_limit)
     blurred = cv2.GaussianBlur(frame, (11, 11), 0)
     hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
@@ -80,7 +98,7 @@ def ball_pub():
     bar_height, bar_width = imgs[1].shape[:2]
     pano = np.zeros((foo_height, foo_width+bar_width, 3), np.uint8)
     pano = np.hstack((imgs[0], imgs[1]))
-    cv2.imshow("Result", pano)
+    #cv2.imshow("Result", pano)
     key = cv2.waitKey(1) & 0xFF
     if len(cnts) > 0:
       payload = ''
@@ -123,18 +141,23 @@ def ball_pub():
             payload += '{"action": "right", "value": "' + str(-(pts[i][0]-pts[i-1][0])) + '"}'
       thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
       cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
-      cv2.putText(frame, w, (350, 350), cv2.FONT_HERSHEY_PLAIN, fontScale=1.5, color=(0, 100, 100), thickness=2)
+      #cv2.putText(frame, w, (350, 350), cv2.FONT_HERSHEY_PLAIN, fontScale=1.5, color=(0, 100, 100), thickness=2)
       if(payload != ''):
         ret = client1.publish(topic,payload)
         print(payload)
-        print("Please check data on your Subscriber Code \n")
-    cv2.imshow("Result", pano)  
+        #print("Please check data on your Subscriber Code \n")
+    #cv2.imshow("Result", pano)
+    #cv2.imwrite("/ramdisk/capturepy.png", pano)
+    payload_frame = pano.tobytes()
+    #print(pano.shape)
+    if(payload_frame != ''):
+        ret = client3.publish(topic_frame, payload_frame)
+
     key = cv2.waitKey(1) & 0xFF
     if key == ord("q"):
         break
-    
-  vs.release()
-  cv2.destroyAllWindows()  
+
+  #vs.release()
+  #cv2.destroyAllWindows()
 
 ball_pub()
-
