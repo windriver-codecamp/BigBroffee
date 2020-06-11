@@ -9,7 +9,7 @@ and follow the instructions here: https://github.com/Wind-River/vxworks7-ros2-bu
 /bd0a/usr/include/<br>
 4.In the vxworks7-ros2-build directory, clone ssh://git@bitbucket.wrs.com:7999/~mdragusu/ball_follower_robot.git<br>
 5.Copy the files from ball_follower_robot/mqtt_vxworks/qemu_ia_sdk/ into the SDK folder. It will also be necessary to copy the contents of qemu_ia_sdk/toolkit/include/usr/lib/common into export/root/lib. Copy mosquitto.vxe and mosquitto.conf inside export/root/<br>
-6.The following dynamic libraries are required in the export/root folder:libmosquitto.so.1, libssl.so.1, libjson.so.1 and libc.so.1 and can be found inside sdk/toolkit/include/usr/lib/common/
+6.The following dynamic libraries are required in the export/root folder:libmosquitto.so.1, libssl.so.1, libjson.so.1 and libc.so.1 and can be found inside sdk/toolkit/include/usr/lib/common/<br>
 7.Open a docker container in which to build the application as follows:<br>
 <div>sudo docker run -ti -v /path/to/sdk/wrsdk-vxworks7-qemu:/wrsdk -v $PWD:/work vxros2build:1.0<br>
 $ source /work/build/ros2/ros2_ws/install/setup.bash<br>
