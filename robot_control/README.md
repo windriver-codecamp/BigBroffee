@@ -2,15 +2,23 @@
 
 1.Clone the repo: https://github.com/Wind-River/vxworks7-ros2-build.git<br>
 and follow the instructions here: https://github.com/Wind-River/vxworks7-ros2-build<br>
-2.Download the QEMU IA sdk from windriver labs.<br>
-3.Everything in /work/export/ will be copied on the desired vxworks fs medium; For example, a valid setup would be moving /work/export/root/* to /bd0a/usr/ ; The Environment would look like this:<br>
+
+2.Everything in /work/export/ will be copied on the desired vxworks fs medium; For example, a valid setup would be moving /work/export/root/* to /bd0a/usr/ ; The Environment would look like this:<br>
 /bd0a/usr/lib/<br>
 /bd0a/usr/llvm/<br>
 /bd0a/usr/include/<br>
-4.In the vxworks7-ros2-build directory, clone ssh://git@bitbucket.wrs.com:7999/~mdragusu/ball_follower_robot.git<br>
-5.Copy the files from ball_follower_robot/mqtt_vxworks/qemu_ia_sdk/ into the SDK folder. It will also be necessary to copy the contents of qemu_ia_sdk/toolkit/include/usr/lib/common into export/root/lib. Copy mosquitto.vxe and mosquitto.conf inside export/root/<br>
+
+3.In the vxworks7-ros2-build directory: git clone ssh://git@bitbucket.wrs.com:7999/~mdragusu/ball_follower_robot.git<br>
+
+4.Copy the files from ball_follower_robot/mqtt_vxworks/qemu_ia_sdk/ into the SDK folder. 
+It will also be necessary to copy the contents of qemu_ia_sdk/toolkit/include/usr/lib/common into export/root/usr/lib. <br>
+
+5.Copy mosquitto.vxe and mosquitto.conf inside export/root/ <br>
+
 6.The following dynamic libraries are required in the export/root folder:libmosquitto.so.1, libssl.so.1, libjson.so.1 and libc.so.1 and can be found inside sdk/toolkit/include/usr/lib/common/<br>
+
 7.Open a docker container in which to build the application as follows:<br>
+
 <div>sudo docker run -ti -v /path/to/sdk/wrsdk-vxworks7-qemu:/wrsdk -v $PWD:/work vxros2build:1.0<br>
 $ source /work/build/ros2/ros2_ws/install/setup.bash<br>
 $ cd ball_follower_robot/robot_control/ <br>
@@ -25,10 +33,10 @@ t3_control executable is the resulted app that needs to be copied into the vxwor
 move the compiled files into the /export/root folder (or wherever the vxworks fs is mounted)
 
 1st terminal:<br>
-qemu-system-x86_64 -m 512M  -kernel $WIND_SDK_TOOLKIT/../bsps/itl_generic_2_0_2_1/boot/vxWorks -net nic  -net user,hostfwd=tcp::1534-:1534,hostfwd=tcp:127.0.0.1:8023-:23,hostfwd=tcp::11883-:1883 \<br>
--display none -serial mon:stdio \<br>
--append "bootline:fs(0,0)host:vxWorks h=10.0.2.2 e=10.0.2.15 u=username pw=password o=gei0" \<br>
--usb -device usb-ehci,id=ehci  \<br>
+qemu-system-x86_64 -m 512M  -kernel $WIND_SDK_TOOLKIT/../bsps/itl_generic_2_0_2_1/boot/vxWorks -net nic  -net user,hostfwd=tcp::1534-:1534,hostfwd=tcp:127.0.0.1:8023-:23,hostfwd=tcp::11883-:1883 \ <br>
+-display none -serial mon:stdio \ <br>
+-append "bootline:fs(0,0)host:vxWorks h=10.0.2.2 e=10.0.2.15 u=username pw=password o=gei0" \ <br>
+-usb -device usb-ehci,id=ehci  \ <br>
 -device usb-storage,drive=fat32 -drive file=fat:rw:./export/root,id=fat32,format=raw,if=none<br>
 (if you do not modify the kernel path to the location where your sdk is located, it might be necessary to source wrsdk-vxworks7-qemu/toolkit/wind_sdk_env.linux)<br>
 
