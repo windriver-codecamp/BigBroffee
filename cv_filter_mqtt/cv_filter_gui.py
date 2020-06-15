@@ -2,7 +2,7 @@ import cv2 as cv
 import paho.mqtt.client as paho
 
 
-broker="localhost"
+broker="192.168.0.160"
 topic="filter"
 port=1883
 
@@ -40,7 +40,7 @@ def on_trackbar(val):
 
 client1= paho.Client("cv_filter") #create client object
 client1.on_publish = on_publish #assign function to callback
-client1.connect(broker,port,keepalive=60) #establishing connection
+client1.connect(broker,port,keepalive=6000) #establishing connection
 
 
 cv.namedWindow(title_window)

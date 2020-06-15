@@ -10,9 +10,12 @@ import imutils
 import time
 import cv2
 import os
+from datetime import datetime
 
-broker="127.0.0.1" 
-topic="test"
+
+
+broker="192.168.0.160"
+topic="/bb"
 topic2="filter"
 topic_frame="frame"
 port=1883
@@ -22,14 +25,14 @@ horizontal_limit = 320
 vertical_limit = 240
 normal_radius_threshold = 40
 close_radius_threshold = 55
-mes = "87, 78, 121, 255, 255, 255"
+mes = "150, 150, 121, 255, 255, 255"
 
 
 
 def on_message(client, userdata, message):
     global mes
-    print("Received data is :")  
-    print(str(message.payload.decode("utf-8")) ) 
+    print("Received data is :")
+    print(str(message.payload.decode("utf-8")) )
     mes =str(message.payload.decode("utf-8"))
 
 def on_publish(client,userdata,result):
@@ -43,17 +46,17 @@ def on_publish_frame(client,userdata,result):
 def ball_pub():
   client1= paho.Client("control1")
   client1.on_publish = on_publish
-  client1.connect(broker,port,keepalive=60)
+  client1.connect(broker,port,keepalive=6000)
   client2= paho.Client("control2")
-  client2.on_message = on_message 
+  client2.on_message = on_message
   print("Connecting to host",broker)
-  client2.connect(broker, port, keepalive=60)
-  print("Subscribing begins here")    
+  client2.connect(broker, port, keepalive=6000)
+  print("Subscribing begins here")
   client2.subscribe(topic2)
 
-  client3= paho.Client("frame_pub")
-  client3.on_publish = on_publish_frame
-  client3.connect(broker,port,keepalive=60)
+  #client3= paho.Client("frame_pub")
+  #client3.on_publish = on_publish_frame
+  #client3.connect(broker,port,keepalive=60)
 
 
   ap = argparse.ArgumentParser()
@@ -64,14 +67,22 @@ def ball_pub():
 	help="Whether or not frames should be displayed")
   args = vars(ap.parse_args())
   pts = deque(maxlen=args["buffer"])
+  left_cnt = 0
+  right_cnt = 0
+  center_treshold = 50
   vs = VideoStream(src=0).start()
-  vs.stream.set(cv2.CAP_PROP_FPS, 30)
+  vs.stream.set(cv2.CAP_PROP_FPS, 5)
 
   time.sleep(2)
   radius1 = 0
+  t1 = datetime.now()
+  t2 = t1
+  publish_interval = 10
+
   while True:
     frame1 = vs.read()
-    client2.loop_start()
+    #client2.loop_start()
+    #client1.loop_start()
     lis = (mes.split(','))
     liss = [int(i.strip()) for i in lis]
     blueLower = (liss[0], liss[1], liss[2])
@@ -97,7 +108,7 @@ def ball_pub():
     foo_height, foo_width = imgs[0].shape[:2]
     bar_height, bar_width = imgs[1].shape[:2]
     pano = np.zeros((foo_height, foo_width+bar_width, 3), np.uint8)
-    pano = np.hstack((imgs[0], imgs[1]))
+    #pano = np.hstack((imgs[0], imgs[1]))
     #cv2.imshow("Result", pano)
     key = cv2.waitKey(1) & 0xFF
     if len(cnts) > 0:
@@ -109,22 +120,28 @@ def ball_pub():
       if radius > 10:
         cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
         cv2.circle(frame, center, 5, (0, 0, 255), -1)
+        '''
         if radius <= close_radius_threshold and radius > normal_radius_threshold:
           cv2.putText(frame, "Normal.", (350, 300), cv2.FONT_HERSHEY_PLAIN, fontScale=1.5, color=(0, 100, 100), thickness=2)
         elif radius > close_radius_threshold:
           cv2.putText(frame, "Close", (350, 300), cv2.FONT_HERSHEY_PLAIN, fontScale=1.5, color=(0, 100, 100), thickness=2)
         elif radius < normal_radius_threshold:
           cv2.putText(frame, "Far", (350, 300), cv2.FONT_HERSHEY_PLAIN,fontScale=1.5, color=(0, 100, 100), thickness=2)
+          '''
+      #for forward/backward movement
+      '''
       if(radius-radius1 > radius_threshold):
           payload += '{"action": "forward", "value": "' + str(radius-radius1)+'"}'
       elif(radius-radius1 < -radius_threshold):
           payload += '{"action": "backward", "value": "' + str(-(radius-radius1)) +'"}'
       radius1=radius
+      '''
     pts.appendleft(center)
 
     for i in range(1, len(pts)):
       if pts[i - 1] is None or pts[i] is None:
               continue
+      '''
       elif pts[i][0] > 0 and pts[i][0] < horizontal_limit/2 and pts[i][1] > 0 and pts[i][1] < vertical_limit/2:
               w = "Left-up"
       elif pts[i][0] > 0 and pts[i][0] < horizontal_limit/2 and pts[i][1] > vertical_limit/2 and pts[i][1] < vertical_limit:
@@ -135,23 +152,49 @@ def ball_pub():
           w = "Right-down"
       elif pts[i][0] == horizontal_limit/2 and pts[i][1] == vertical_limit/2:
           w = "Center!"
-      if(pts[i][0]-pts[i-1][0] > horizontal_threshold):
-            payload += '{"action": "left", "value": "' + str(pts[i][0]-pts[i-1][0]) + '"}'
-      elif(pts[i][0]-pts[i-1][0] < -horizontal_threshold):
-            payload += '{"action": "right", "value": "' + str(-(pts[i][0]-pts[i-1][0])) + '"}'
+      '''
+      if(pts[i][0] < horizontal_limit/2 and horizontal_limit/2 - pts[i][0] >= abs(center_treshold)):
+        left_cnt += 1
+      elif(pts[i][0] > horizontal_limit/2 and pts[i][0] - horizontal_limit/2 >= abs(center_treshold)):
+        right_cnt += 1
+      elif(horizontal_limit/2 - pts[i][0] >= abs(center_treshold)):
+        left_cnt = 0
+        right_cnt = 0
+
+      '''
       thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
       cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
-      #cv2.putText(frame, w, (350, 350), cv2.FONT_HERSHEY_PLAIN, fontScale=1.5, color=(0, 100, 100), thickness=2)
-      if(payload != ''):
-        ret = client1.publish(topic,payload)
-        print(payload)
-        #print("Please check data on your Subscriber Code \n")
-    #cv2.imshow("Result", pano)
-    #cv2.imwrite("/ramdisk/capturepy.png", pano)
-    payload_frame = pano.tobytes()
-    #print(pano.shape)
+      '''
+      t2 = datetime.now()
+      if ((t2 - t1).microseconds > 200000):
+        if(left_cnt > right_cnt):
+          payload = '{"action": "left", "value": "' + '1' + '"}'
+        elif(right_cnt > left_cnt):
+          payload = '{"action": "right", "value": "' + '1' + '"}'
+        elif (right_cnt == 0 and left_cnt == 0):
+          payload = '{"action": "right", "value": "' + '0' + '"}'
+        
+        if(payload != ''):
+          ret = client1.publish(topic, payload, qos=0, retain=False)
+          print(payload)
+        payload = ''
+        left_cnt = 0
+        right_cnt = 0
+        t1 = datetime.now()
+
+    pano = np.hstack((imgs[0], imgs[1]))
+    cv2.imshow("Result", pano) #linux display
+
+    #cv2.imwrite("/ramdisk/capturepy.png", pano) # vxworks html image show
+    
+    #vxworks  mqtt image publish start
+    '''
+    payload_frame = pano.tobytes() # vxworks  mqtt image publish  
+    print(pano.shape)
     if(payload_frame != ''):
         ret = client3.publish(topic_frame, payload_frame)
+    '''
+    #vxworks  mqtt image publish stop
 
     key = cv2.waitKey(1) & 0xFF
     if key == ord("q"):
