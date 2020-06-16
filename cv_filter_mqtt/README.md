@@ -1,6 +1,6 @@
 # cv_filter_mqtt
 
-# ￼Overview
+# Overview
 
 To assure the accuracy of detecting the ball from ../ball_tracking/ use cv_filter_gui.py to adjust the colour parameters of the ball.
 
