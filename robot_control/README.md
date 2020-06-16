@@ -8,7 +8,7 @@ and follow the instructions here: https://github.com/Wind-River/vxworks7-ros2-bu
 /bd0a/usr/llvm/<br>
 /bd0a/usr/include/<br>
 
-3.In the vxworks7-ros2-build directory: git clone ssh://git@bitbucket.wrs.com:7999/~mdragusu/ball_follower_robot.git<br>
+3.Inside the vxworks7-ros2-build directory, copy this repository here.<br>
 
 4.Copy the files from ball_follower_robot/mqtt_vxworks/qemu_ia_sdk/ into the SDK folder. 
 It will also be necessary to copy the contents of qemu_ia_sdk/toolkit/include/usr/lib/common into export/root/usr/lib. <br>
@@ -30,7 +30,7 @@ t3_control executable is the resulted app that needs to be copied into the vxwor
 
 <b>For testing the project:</b>
 
-move the compiled files into the /export/root folder (or wherever the vxworks fs is mounted)
+Move the compiled files into the /export/root folder (or wherever the vxworks fs is mounted)
 
 1st terminal:<br>
 qemu-system-x86_64 -m 512M  -kernel $WIND_SDK_TOOLKIT/../bsps/itl_generic_2_0_2_1/boot/vxWorks -net nic  -net user,hostfwd=tcp::1534-:1534,hostfwd=tcp:127.0.0.1:8023-:23,hostfwd=tcp::11883-:1883 \ <br>
@@ -49,7 +49,7 @@ mosquitto.vxe -c mosquitto.conf &<br>
 telnet 127.0.0.1 8023<br>
 cmd<br>
 C putenv "LD_LIBRARY_PATH=/bd0a/usr/lib"<br>
-rtp exec -u 0x30000 t3_control 0.04 0.4 10 1 0.1 0.035 0.15<br>
+rtp exec -u 0x30000 t3_control<br>
 (here the main application will run and receive mqtt messages (from the 4th terminal) and publish them, along with publishing manual controls.)<br>
 
 3rd terminal:<br>
