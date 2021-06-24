@@ -1,0 +1,45 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "motion_detect.vxe_gdb_board_127.0.0.1:1534",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/dan/workspace/motion_detect/build/motion_detect.vxe",
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "externalConsole": false,
+            "args": [
+                "priority=100",
+                "stacksize=16384000"
+            ],
+            "environment": [
+                {
+                    "name": "connection",
+                    "value": "board_127.0.0.1:1534"
+                }
+            ],
+            "MIMode": "gdb",
+            "miDebuggerPath": "/home/dan/.local/share/DevStudio/debug/wrsdk-vxworks7-qemu-1.8_GDB.sh",
+            "setupCommands": [
+                {
+                    "text": "set remotetimeout 120"
+                },
+                {
+                    "text": "target extended-remote ${command:DevStudio.command.project.getMiDebuggerAddress}"
+                },
+                {
+                    "text": "remote put /home/dan/workspace/motion_detect/build/motion_detect.vxe /ram0/motion_detect.vxe"
+                },
+                {
+                    "text": "set remote exec-file /ram0/motion_detect.vxe"
+                }
+            ],
+            "launchCompleteCommand": "exec-run",
+            "logging": {
+                "trace": true,
+                "engineLogging": true
+            }
+        }
+    ]
+}

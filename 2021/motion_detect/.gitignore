@@ -1,0 +1,9 @@
+#ignore build output folder
+build/
+Debug/
+NoDebug/
+
+#ignore binary output files
+*.o
+*.out
+*.vxe

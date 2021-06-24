@@ -1,0 +1,7 @@
+[
+    {
+        "name": "wrsdk-vxworks7-qemu-1.8",
+        "environmentSetupScript": "/home/dan/opt/wrsdk-vxworks7-qemu-1.8/sdkenv.sh",
+        "toolchainFile": "/home/dan/opt/wrsdk-vxworks7-qemu-1.8/vxsdk/sysroot/mk/rtp.toolchain.cmake"
+    }
+]

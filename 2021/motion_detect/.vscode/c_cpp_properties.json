@@ -1,0 +1,33 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        },
+        {
+            "name": "VxWorks RTP",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "browse": {
+                "path": [
+                    "/home/dan/opt/wrsdk-vxworks7-qemu-1.8/vxsdk/sysroot/usr/h/public/"
+                ]
+            },
+            "compilerPath": "/home/dan/opt/wrsdk-vxworks7-qemu-1.8/vxsdk/host/x86_64-linux/bin/wr-cc"
+        }
+    ],
+    "version": 4
+}
