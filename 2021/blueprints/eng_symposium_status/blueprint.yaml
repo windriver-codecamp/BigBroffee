@@ -1,0 +1,33 @@
+tosca_definitions_version: cloudify_dsl_1_3
+imports:
+  - 'https://cloudify.co/spec/cloudify/5.1.0/types.yaml'
+  - 'plugin:cloudify-utilities-plugin'
+description: Engineering Symposium Project 2021
+inputs:
+  command:
+    type: string
+    default: getStatus
+  rest_endpoint:
+    description: |
+      REST API endpoint
+    default: 128.224.78.97
+node_templates:
+  vxworks-state:
+    type: cloudify.rest.Requests
+    properties:
+      hosts:
+        - get_input: rest_endpoint
+      port: 8081
+      ssl: false
+      verify: false
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            template_file: templates/conductor-rest-template.yaml
+            save_path: status
+            prerender: true
+            remove_calls: true
+            params:
+              COMMAND:
+                get_input: command

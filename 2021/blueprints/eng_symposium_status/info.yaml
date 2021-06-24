@@ -1,0 +1,19 @@
+nodes:
+  - name: http_web_server
+    width: 210
+    height: 160
+    x: 40
+    'y': 40
+    uiType: Node
+    type: cloudify.nodes.WebServer
+  - name: vxworks-state
+    width: 210
+    height: 160
+    x: 20
+    'y': 60
+    uiType: Node
+    type: cloudify.rest.Requests
+scale: 2.4941195444591675
+offset:
+  - 0
+  - 0
